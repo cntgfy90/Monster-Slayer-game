@@ -1,84 +1,82 @@
 var app = new Vue({
 	el: '#app',
 	data: {
-		startGame: false,
-		finished: false,
-		widthMonsterInit: 100,
-		widthYouInit: 100,
-		lastHits: [],
-		lastHeal: [],
-		lastSpecialHit: [],
-		hitsMonster: 'Monster hits player for',
-		hitsPlayer: 'Player hits monster for',
-		healMessage: 'Player heals himself for',
-		healCounter: 0,
-		specialHitCounter: 0
-	},
-	computed: {
-
+		gameStart: false,
+		monsterHealth: 100,
+		playerHealth: 100,
+		turns: [],
+		damage: 0
 	},
 	methods: {
-		startNewGame: function() {
-			this.startGame = true;
-			this.widthYouInit = 100;
-			this.widthMonsterInit = 100;
-			this.healCounter = 0;
-			this.specialHitCounter = 0;
+		startGame: function() {
+			this.gameStart = true;
+			this.monsterHealth = 100;
+			this.playerHealth = 100;
+			this.turns = [];
+		},
+		playerAttack: function() {
+			this.damage = this.getRandom(30, 10);
+
+			this.playerHealth -= this.damage;
+			this.generateMessage(false, 'Monster hits Player for', this.damage);
+			
+			if ( this.checkWinner() ) return; 
+		},
+		monsterAttack: function() {
+			this.damage = this.getRandom(20, 5);
+
+			this.monsterHealth -= this.damage;
+			this.generateMessage(true, 'Player hits Monster for', this.damage);
+
+			if ( this.checkWinner() ) return;
 		},
 		attack: function() {
-			var random = {
-				randomValueYou: Math.floor((Math.random() * 40) + 1),
-				randomValueMonster: Math.floor((Math.random() * 40) + 1)
-			};
-
-			this.widthYouInit -= random.randomValueYou;
-			this.widthMonsterInit -= random.randomValueMonster;
-			this.lastHits.unshift(random.randomValueMonster);
-			this.lastHits.unshift(random.randomValueYou);
-			// this.lastActionMonster.unshift(random.randomValueYou);
-			// this.lastActionYou.unshift(random.randomValueMonster);
+			this.monsterAttack();
+			this.playerAttack();	
 		},
 		specialAttack: function() {
-			var random = {
-				randomSpecialHitValue: Math.floor((Math.random() * 50) + 10)
-			};
-			if (this.specialHitCounter < 1) {
-				this.widthMonsterInit -= random.randomSpecialHitValue;
-				this.lastSpecialHit.unshift(random.randomSpecialHitValue);
-				this.specialHitCounter++;
-			}
+			this.playerAttack();
+
+			this.damage = this.getRandom(50, 20);
+			this.monsterHealth -= this.damage;
+			this.generateMessage(true, 'Player hits hard Monster for', this.damage);
+
+			this.checkWinner();
 		},
 		heal: function() {
-			var random = {
-				randomHealValue: Math.floor((Math.random() * 10) + 5)
-			};
-			if (this.widthYouInit < 100 && this.healCounter < 3) {
-				this.widthYouInit += random.randomHealValue;
-				this.lastHeal.push(random.randomHealValue);
-				this.healCounter++;
-			}	
-		}
-	},
-	watch: {
-		widthMonsterInit: function(val) {
-			var that = this;
-			if (val < 0) {
-				this.widthMonsterInit = 0;
-				setTimeout(function(){
-					alert('You won! Congratulations!');
-					that.startGame = !that.startGame;
-				}, 500);
+			if ( this.playerHealth < 90 ) {
+				this.playerHealth += 10;
+				this.generateMessage(true, 'Player heals himself for', 10);
 			}
+			return;
 		},
-		widthYouInit: function(val) {
-			var that = this;
-			if (val < 0) {
-				this.widthYouInit = 0; 
-				setTimeout(function(){
-					alert('You lost, maybe, you should try one more time!');
-					that.startGame = !that.startGame;
-				}, 500);
+		giveUp: function() {
+			this.gameStart = false;
+		},
+		getRandom: function(max, min) {
+			return Math.max(Math.floor(Math.random() * max) + 1, min);
+		},
+		checkWinner: function() {
+			if (this.playerHealth <= 0) {
+				confirm('You lost. One more time?') ?
+				this.startGame() :
+				this.gameStart = false;
+
+				return true;
+			} else if (this.monsterHealth <= 0) {
+				confirm('You won. One more time?') ?
+				this.startGame() :
+				this.gameStart = false;
+
+				return true;
 			}
+			return false;
+		},
+		generateMessage: function(player, text, val) {
+			return this.turns.unshift({
+						isPlayer: player,
+						value: text + ' ' + val
+					});
 		}
 	}
 });
