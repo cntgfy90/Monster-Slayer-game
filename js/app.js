@@ -31,8 +31,8 @@ var app = new Vue({
 			if ( this.checkWinner() ) return;
 		},
 		attack: function() {
-			this.playerAttack();
 			this.monsterAttack();
+			this.playerAttack();	
 		},
 		specialAttack: function() {
 			this.playerAttack();
@@ -58,18 +58,16 @@ var app = new Vue({
 		},
 		checkWinner: function() {
 			if (this.playerHealth <= 0) {
-				if ( confirm('You lost. One more time?') ) {
-					this.startGame();
-				} else {
-					this.gameStart = false;
-				}
+				confirm('You lost. One more time?') ?
+				this.startGame() :
+				this.gameStart = false;
+
 				return true;
 			} else if (this.monsterHealth <= 0) {
-				if ( confirm('You won. One more time?') ) {
-					this.startGame();
-				} else {
-					this.gameStart = false;
-				}
+				confirm('You won. One more time?') ?
+				this.startGame() :
+				this.gameStart = false;
+
 				return true;
 			}
 			return false;
