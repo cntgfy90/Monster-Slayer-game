@@ -19,6 +19,7 @@ var app = new Vue({
 	},
 	methods: {
 		startNewGame: function() {
+			this.startGame = true;
 			this.widthYouInit = 100;
 			this.widthMonsterInit = 100;
 			this.healCounter = 0;
